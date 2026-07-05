@@ -253,17 +253,44 @@ Add a new record to `RAW.airport_comments`. Then materialize the incremental mod
 Add your solution in the next lines:
 * Adding a new record:
   ```
-  REPLACE THIS CODE BLOCK BY PASTING THE SQL for adding a new record to `RAW.airport_comments`
+  
+USE DATABASE AIRSTATS;
+
+INSERT INTO RAW.airport_comments(ID, THREAD_REF, AIRPORT_REF, AIRPORT_IDENT, DATE, MEMBER_NICKNAME, SUBJECT, BODY, LOADED_AT)
+VALUES(
+  602622,	
+  82705,
+  39825,
+  'CA-017855',
+  '2026-07-05 00:00:00.000',
+  'test_user',
+  'This is test comment',
+  'This is test comment inserted at 05 July 2026.',
+  '2026-07-05 01:00:00.000'
+)
+
   ```
 * Command to execute to update this model (but only this model, not all the models):
   ```
-  REPLACE THIS CODE BLOCK BY PASTING THE dbt COMMAND YOU EXECUTED
+  dbt run -s silver_airport_comments
   ``` 
 * Execute an SQL on the Snowflake UI to ensure the new record has been added:
+  THE SQL to extract the new record from `silver_airport_comments`:
+
   ```
-  REPLACE THIS CODE BLOCK BY PASTING 
-  1) THE SQL to extract the new record from `silver_airport_comments`
-  2) THE result you see in Snowflake
+USE DATABASE AIRSTATS;
+
+SELECT *
+FROM DEV.silver_airport_comments
+WHERE DATE(loaded_at) = CURRENT_DATE;
+ ``` 
+
+  THE result you see in Snowflake:
+
+  ``` 
+  COMMENT_ID	AIRPORT_IDENT	COMMENT_TIMESTAMP	MEMBER_NICKNAME	COMMENT_SUBJECT	COMMENT_BODY	LOADED_AT
+602622	CA-017855	2026-07-05 00:00:00.000	test_user	This is test comment	This is test comment inserted at 05 July 2026.	2026-07-05 02:40:07.923 -0700
+
   ``` 
 
 **Requirements** 
@@ -281,12 +308,29 @@ The airport `Los Angeles County Sheriff's Department Heliport` (airport_ident: `
 
 * Updating the record to "closed":
   ```
-  REPLACE THIS BLOCK BY PASTING THE SQL you executed
+  UPDATE RAW.AIRPORTS
+  SET type = 'closed'
+  WHERE IDENT = '01CN'
   ```
 * Command to execute and snapshot update:
   ```
-  REPLACE THIS CODE BLOCK BY PASTING THE dbt COMMAND YOU EXECUTED
+  dbt run --select silver_airports
+  
+  dbt snapshot
   ``` 
+  Check what we got in snapshot table in snowflake:
+
+  ```
+  SELECT * FROM DEV_SNAPSHOTS.SCD_SILVER_AIRPORTS WHERE AIRPORT_IDENT = '01CN'
+  ```
+  Result:
+
+  ```
+  AIRPORT_IDENT	AIRPORT_TYPE	AIRPORT_NAME	AIRPORT_LAT	AIRPORT_LONG	CONTINENT	ISO_COUNTRY	ISO_REGION	DBT_SCD_ID	DBT_UPDATED_AT	DBT_VALID_FROM	DBT_VALID_TO
+01CN	heliport	Los Angeles County Sheriff's Department Heliport	34.037799835	-118.153999329	NA	US	US-CA	5770067a2418b60a54ceac811b646545	2026-07-05 15:28:35.062	2026-07-05 15:28:35.062	2026-07-05 15:39:39.262
+01CN	closed	Los Angeles County Sheriff's Department Heliport	34.037799835	-118.153999329	NA	US	US-CA	50c1d8f18787b7e6a1c0dffd0c1bfdc2	2026-07-05 15:39:39.262	2026-07-05 15:39:39.262	
+
+  ```
 
 #### Analyses
 * Create `analyses/la_heliport_closed.sql` where you validate if the snapshot went through - select every line corresponding to this airport in the snapshot table.

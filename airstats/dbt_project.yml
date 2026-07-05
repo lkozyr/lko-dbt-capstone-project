@@ -26,9 +26,7 @@ models:
   airstats:
     silver:
       +materialized: table 
-    src:                     
-      +materialized: ephemeral
-     
+
 
 
 # Configuring models
