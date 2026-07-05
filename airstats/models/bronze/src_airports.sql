@@ -1,3 +1,8 @@
+{{   
+    config(
+        materialized = 'ephemeral'
+    )
+}}
 WITH raw_airports AS (
   select * from {{ source ('airstats', 'airports') }}
 )
