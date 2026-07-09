@@ -1,0 +1,8 @@
+snapshots:
+  - name: scd_silver_runways
+    relation: ref('airstats', 'silver_runways')
+    config:
+      schema: snapshots
+      unique_key: runway_id
+      strategy: check
+      check_cols: all
