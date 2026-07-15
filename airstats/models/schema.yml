@@ -1,0 +1,156 @@
+version: 2
+models:
+ - name: silver_airports
+   description: Cleansed table which contains airports records.
+  #  data_tests:
+  #    - minimum_row_count:   # this is a custom generic test defined in tests/generic folder;
+  #        arguments:
+  #           min_row_count: 1000
+  #        severity: warn   # if test fails, show warning instead of error;
+  #                         # this can also be done inside test definition in tests/generic/minimum_row_count.sql;
+  #                         # test severity defined here will OVERWRITE whatever severity is specified in test definition;
+       
+   columns:
+    - name: airport_ident
+      description: Primary key for the airport.
+      data_type: string
+      data_tests: 
+        - not_null
+        - unique
+
+    - name: airport_type
+      description: Type of the airport.
+      data_type: string
+      data_tests:
+        - not_null
+        - accepted_values:
+            values: ['small_airport', 'medium_airport', 'large_airport', 'heliport', 'seaplane_base', 'balloonport', 'closed']
+
+    - name: airport_name
+      description: Name of the airport.
+      data_type: VARCHAR
+      data_tests: 
+        - not_null
+    
+    - name: airport_lat
+      description: Latitude value of the airport geo location.
+      data_type: number
+      data_tests: 
+        - not_null
+
+    - name: airport_long
+      description: Longitude value of the airport geo location.
+      data_type: number
+      data_tests: 
+        - not_null
+    
+    - name: iso_country
+      description: ISO country code of the airport; example, US.
+      data_type: VARCHAR
+      data_tests: 
+        - not_null
+    
+    - name: iso_region
+      description: ISO region code of the airport; example, US-CA.
+      data_type: VARCHAR
+      data_tests: 
+        - not_null
+
+ - name: silver_airport_comments
+   description: Cleansed table which contains airport comments records.
+   config:
+     contract:
+       enforced: true # here we enable the Contact checks for this model; column type definitions - see below  
+   constraints:
+     - type: primary_key
+       columns: [comment_id]
+
+   columns:
+    - name: comment_id
+      description: Primary key for the airport comment.
+      data_type: NUMBER
+      constraints:  
+        - type: not_null
+      data_tests:    # these checks will occure once data is already in the table (unlike constraints that check at isert time);
+        - not_null
+        - unique
+
+    - name: airport_ident
+      description: Foreign key to the airport.
+      data_type: VARCHAR
+      constraints:
+        - type: not_null
+      data_tests: 
+        - not_null
+        - relationships:
+              arguments:
+                to: ref('silver_airports')
+                field: airport_ident
+              severity: warn   # for some reason airport_comments table contains 1368 records where airport_ident values that do not exist in airports table, so I set this this to warning instead of error;
+
+    - name: comment_timestamp
+      description: Timestamp of the comment.
+      data_type: timestamp
+      data_tests: 
+        - not_null
+
+    - name: member_nickname
+      description: Nickname of the member who left the comment.
+      data_type: string
+      data_tests: 
+        - not_null
+
+    - name: comment_body
+      description: Comment body text.
+      data_type: string
+      data_tests: 
+        - not_null
+
+    - name: loaded_at
+      description: Timestamp when the record was loaded into the table.
+      data_type: timestamp
+      data_tests: 
+        - not_null
+
+ - name: silver_runways
+   description: Cleansed table which contains runways records.
+   columns:
+    - name: runway_id
+      description: Primary key for the airport runway.
+      data_type: integer 
+      data_tests:    # these checks will occure once data is already in the table (unlike constraints that check at isert time);
+        - not_null
+        - unique
+
+    - name: airport_ident
+      description: Foreign key to the airport.
+      data_type: VARCHAR
+      data_tests: 
+        - not_null
+        - relationships:
+              arguments:
+                to: ref('silver_airports')
+                field: airport_ident
+              severity: warn 
+
+    - name: runway_surface
+      description: Surface type of the runway.
+      data_type: string
+      data_tests: 
+        - not_null
+
+    - name: runway_lighted
+      description: Whether the runway is lighted or not.
+      data_type: integer
+      data_tests: 
+        - not_null
+        - accepted_values:
+            values: [0, 1]
+
+    - name: runway_closed
+      description: Whether the runway is currently closed.
+      data_type: integer
+      data_tests: 
+        - not_null
+        - accepted_values:
+            values: [0, 1]

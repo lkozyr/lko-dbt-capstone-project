@@ -28,6 +28,10 @@ models:
       +materialized: table 
 
 
+data_tests:
+  +store_failures: true # this will store failed tests results (dbt test) - useful in production
+  +schema: _test_failures # specify a custom schema name for storing test failures in your warehouse; if this is not specified, dbt will create and use schema called "AIRBNB.DEV_dbt_test__audit" to store failed tests results;
+
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
