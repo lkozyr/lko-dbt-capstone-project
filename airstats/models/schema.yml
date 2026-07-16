@@ -19,7 +19,7 @@ models:
         - unique
 
     - name: airport_type
-      description: Type of the airport.
+      description: '{{ doc("silver_airports__airport_type") }}'
       data_type: string
       data_tests:
         - not_null
@@ -148,7 +148,7 @@ models:
             values: [0, 1]
 
     - name: runway_closed
-      description: Whether the runway is currently closed.
+      description: '{{ doc("silver_runways__runway_closed") }}'
       data_type: integer
       data_tests: 
         - not_null
